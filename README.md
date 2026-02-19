@@ -6,7 +6,7 @@ Web interface for browsing and searching the RAG (Chroma) database.
 
 - **Search** — Query the knowledge base with natural language
 - **Browse** — View collections and their documents
-- **Synthpunk UI** — Dark theme with neon accents
+- **Modern UI** — Clean design with light/dark theme toggle
 
 ## Deployment
 
