@@ -23,6 +23,7 @@ const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
 const searchResults = document.getElementById('search-results');
 const collectionFilter = document.getElementById('collection-filter');
+const projectFilter = document.getElementById('project-filter');
 const limitFilter = document.getElementById('limit-filter');
 const collectionsList = document.getElementById('collections-list');
 const documentsPanel = document.getElementById('documents-panel');
@@ -72,6 +73,42 @@ async function checkConnection() {
     }
 }
 
+// Load project names for filter
+async function loadProjects() {
+    try {
+        const collections = await api(`/v2/tenants/${TENANT}/databases/${DATABASE}/collections`);
+        const projectsColl = collections.find(c => c.name === 'projects');
+        
+        if (!projectsColl) return;
+        
+        const data = await api(`/v2/tenants/${TENANT}/databases/${DATABASE}/collections/${projectsColl.id}/get`, {
+            method: 'POST',
+            body: JSON.stringify({
+                limit: 100,
+                include: ['metadatas']
+            })
+        });
+        
+        // Extract unique project names from metadata
+        const projectNames = new Set();
+        if (data.metadatas) {
+            data.metadatas.forEach(meta => {
+                if (meta && meta.project) {
+                    projectNames.add(meta.project);
+                }
+            });
+        }
+        
+        // Populate dropdown
+        projectFilter.innerHTML = '<option value="">All</option>';
+        Array.from(projectNames).sort().forEach(name => {
+            projectFilter.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+    } catch (e) {
+        console.error('Failed to load projects:', e);
+    }
+}
+
 // Load collections
 async function loadCollections() {
     try {
@@ -82,6 +119,9 @@ async function loadCollections() {
         collections.forEach(c => {
             collectionFilter.innerHTML += `<option value="${c.name}">${c.name}</option>`;
         });
+        
+        // Also load projects for the project filter
+        await loadProjects();
         
         // Update browse view
         if (collections.length === 0) {
@@ -160,17 +200,25 @@ async function search() {
     searchResults.innerHTML = '<div class="loading">Searching...</div>';
     
     const collectionName = collectionFilter.value;
+    const projectName = projectFilter.value;
     const limit = parseInt(limitFilter.value);
     
     try {
         // Use the query API endpoint which handles embeddings server-side
+        const requestBody = {
+            query: query,
+            collection: collectionName || null,
+            limit: limit
+        };
+        
+        // Add project filter if selected
+        if (projectName) {
+            requestBody.where = { project: projectName };
+        }
+        
         const data = await api('/query', {
             method: 'POST',
-            body: JSON.stringify({
-                query: query,
-                collection: collectionName || null,
-                limit: limit
-            })
+            body: JSON.stringify(requestBody)
         });
         
         const results = data.results || [];
