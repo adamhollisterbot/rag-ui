@@ -139,8 +139,11 @@ async function showDocuments(collection) {
             card.className = 'document-card';
             card.innerHTML = `
                 <div class="document-id">${id}</div>
-                <div class="document-content">${escapeHtml(doc.substring(0, 500))}${doc.length > 500 ? '...' : ''}</div>
+                <div class="document-content">${escapeHtml(doc.substring(0, 300))}${doc.length > 300 ? '...' : ''}</div>
             `;
+            card.addEventListener('click', () => {
+                openModal(`${collection.name}/${id}`, doc);
+            });
             documentsList.appendChild(card);
         });
     } catch (e) {
@@ -184,19 +187,25 @@ async function search() {
             card.className = 'result-card';
             
             const score = result.distance !== null ? result.distance.toFixed(4) : 'N/A';
+            const snippet = result.document.length > 300 
+                ? result.document.substring(0, 300) + '...' 
+                : result.document;
             
             card.innerHTML = `
                 <div class="result-header">
                     <span class="result-source">${result.collection}/${result.id}</span>
                     <span class="result-score">score: ${score}</span>
                 </div>
-                <div class="result-content">${escapeHtml(result.document)}</div>
+                <div class="result-content">${escapeHtml(snippet)}</div>
                 ${Object.keys(result.metadata).length > 0 ? `
                     <div class="result-meta">
                         ${Object.entries(result.metadata).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join(' · ')}
                     </div>
                 ` : ''}
             `;
+            card.addEventListener('click', () => {
+                openModal(`${result.collection}/${result.id}`, result.document);
+            });
             searchResults.appendChild(card);
         });
     } catch (e) {
@@ -211,6 +220,36 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// Modal handling
+const modal = document.getElementById('modal');
+const modalSource = document.getElementById('modal-source');
+const modalBody = document.getElementById('modal-body');
+const modalClose = document.getElementById('modal-close');
+const modalBackdrop = document.querySelector('.modal-backdrop');
+
+function openModal(source, content) {
+    modalSource.textContent = source;
+    // Render markdown if marked is available, otherwise show as-is
+    if (typeof marked !== 'undefined') {
+        modalBody.innerHTML = marked.parse(content);
+    } else {
+        modalBody.innerHTML = `<pre style="white-space: pre-wrap;">${escapeHtml(content)}</pre>`;
+    }
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+modalClose.addEventListener('click', closeModal);
+modalBackdrop.addEventListener('click', closeModal);
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+});
 
 // Event listeners
 searchBtn.addEventListener('click', search);
