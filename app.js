@@ -24,8 +24,20 @@ const searchBtn = document.getElementById('search-btn');
 const searchResults = document.getElementById('search-results');
 const collectionFilter = document.getElementById('collection-filter');
 const projectFilter = document.getElementById('project-filter');
+const projectFilterLabel = projectFilter.parentElement;
 const browseProjectFilter = document.getElementById('browse-project-filter');
+const browseProjectLabel = document.getElementById('browse-project-label');
 const limitFilter = document.getElementById('limit-filter');
+
+// Show/hide project filter based on collection selection
+function updateProjectFilterVisibility() {
+    const showProjectFilter = collectionFilter.value === '' || collectionFilter.value === 'projects';
+    projectFilterLabel.style.display = showProjectFilter ? '' : 'none';
+    if (!showProjectFilter) {
+        projectFilter.value = '';
+    }
+}
+collectionFilter.addEventListener('change', updateProjectFilterVisibility);
 const collectionsList = document.getElementById('collections-list');
 const documentsPanel = document.getElementById('documents-panel');
 const documentsList = document.getElementById('documents-list');
@@ -155,6 +167,15 @@ async function loadCollections() {
 
 // Show documents in a collection
 async function showDocuments(collection) {
+    currentBrowseCollection = collection;
+    
+    // Show project filter only for projects collection
+    const isProjectsCollection = collection.name === 'projects';
+    browseProjectLabel.style.display = isProjectsCollection ? '' : 'none';
+    if (!isProjectsCollection) {
+        browseProjectFilter.value = '';
+    }
+    
     const projectName = browseProjectFilter.value;
     collectionTitle.textContent = projectName 
         ? `${collection.name} / ${projectName}` 
@@ -320,6 +341,15 @@ searchInput.addEventListener('keypress', (e) => {
 refreshBtn.addEventListener('click', loadCollections);
 closeDocsBtn.addEventListener('click', () => {
     documentsPanel.classList.add('hidden');
+    browseProjectLabel.style.display = 'none';
+});
+
+// Track current collection for re-filtering
+let currentBrowseCollection = null;
+browseProjectFilter.addEventListener('change', () => {
+    if (currentBrowseCollection) {
+        showDocuments(currentBrowseCollection);
+    }
 });
 
 // Initialize
