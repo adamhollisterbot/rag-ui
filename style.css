@@ -368,6 +368,31 @@ h1 {
   font-weight: var(--font-weight-semibold);
 }
 
+.browse-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.browse-filters label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.browse-filters select {
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
 .btn-secondary {
   padding: var(--space-sm) var(--space-md);
   font-family: var(--font-primary);

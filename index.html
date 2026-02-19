@@ -56,7 +56,15 @@
         <section id="browse-tab" class="tab-content">
             <div class="collections-header">
                 <h2>Collections</h2>
-                <button id="refresh-btn" class="btn-secondary">Refresh</button>
+                <div class="browse-filters">
+                    <label>
+                        Project:
+                        <select id="browse-project-filter">
+                            <option value="">All</option>
+                        </select>
+                    </label>
+                    <button id="refresh-btn" class="btn-secondary">Refresh</button>
+                </div>
             </div>
             <div id="collections-list" class="collections"></div>
             <div id="documents-panel" class="documents-panel hidden">

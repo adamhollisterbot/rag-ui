@@ -24,6 +24,7 @@ const searchBtn = document.getElementById('search-btn');
 const searchResults = document.getElementById('search-results');
 const collectionFilter = document.getElementById('collection-filter');
 const projectFilter = document.getElementById('project-filter');
+const browseProjectFilter = document.getElementById('browse-project-filter');
 const limitFilter = document.getElementById('limit-filter');
 const collectionsList = document.getElementById('collections-list');
 const documentsPanel = document.getElementById('documents-panel');
@@ -99,11 +100,13 @@ async function loadProjects() {
             });
         }
         
-        // Populate dropdown
-        projectFilter.innerHTML = '<option value="">All</option>';
-        Array.from(projectNames).sort().forEach(name => {
-            projectFilter.innerHTML += `<option value="${name}">${name}</option>`;
-        });
+        // Populate dropdowns
+        const options = '<option value="">All</option>' + 
+            Array.from(projectNames).sort().map(name => 
+                `<option value="${name}">${name}</option>`
+            ).join('');
+        projectFilter.innerHTML = options;
+        browseProjectFilter.innerHTML = options;
     } catch (e) {
         console.error('Failed to load projects:', e);
     }
@@ -152,17 +155,27 @@ async function loadCollections() {
 
 // Show documents in a collection
 async function showDocuments(collection) {
-    collectionTitle.textContent = collection.name;
+    const projectName = browseProjectFilter.value;
+    collectionTitle.textContent = projectName 
+        ? `${collection.name} / ${projectName}` 
+        : collection.name;
     documentsPanel.classList.remove('hidden');
     documentsList.innerHTML = '<div class="loading">Loading...</div>';
     
     try {
+        const requestBody = {
+            limit: 50,
+            include: ['documents', 'metadatas']
+        };
+        
+        // Add project filter if selected
+        if (projectName) {
+            requestBody.where = { project: projectName };
+        }
+        
         const data = await api(`/v2/tenants/${TENANT}/databases/${DATABASE}/collections/${collection.id}/get`, {
             method: 'POST',
-            body: JSON.stringify({
-                limit: 50,
-                include: ['documents', 'metadatas']
-            })
+            body: JSON.stringify(requestBody)
         });
         
         if (!data.ids || data.ids.length === 0) {
