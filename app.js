@@ -4,6 +4,19 @@ const API_BASE = '/api';
 const TENANT = 'default_tenant';
 const DATABASE = 'default_database';
 
+// Theme handling
+const themeToggle = document.getElementById('theme-toggle');
+const savedTheme = localStorage.getItem('theme') || 'dark';
+document.body.className = savedTheme === 'light' ? 'theme-light' : '';
+themeToggle.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+
+themeToggle.addEventListener('click', () => {
+    const isLight = document.body.classList.contains('theme-light');
+    document.body.classList.toggle('theme-light', !isLight);
+    themeToggle.textContent = isLight ? '☀️' : '🌙';
+    localStorage.setItem('theme', isLight ? 'dark' : 'light');
+});
+
 // DOM Elements
 const statusEl = document.getElementById('status');
 const searchInput = document.getElementById('search-input');
