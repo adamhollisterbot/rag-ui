@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Explorer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>RAG Explorer</h1>
+            <div class="status" id="status">Connecting...</div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab active" data-tab="search">Search</button>
+            <button class="tab" data-tab="browse">Browse</button>
+        </nav>
+
+        <!-- Search Tab -->
+        <section id="search-tab" class="tab-content active">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search the knowledge base..." autofocus>
+                <button id="search-btn">Search</button>
+            </div>
+            <div class="filters">
+                <label>
+                    Collection:
+                    <select id="collection-filter">
+                        <option value="">All</option>
+                    </select>
+                </label>
+                <label>
+                    Results:
+                    <select id="limit-filter">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                    </select>
+                </label>
+            </div>
+            <div id="search-results" class="results"></div>
+        </section>
+
+        <!-- Browse Tab -->
+        <section id="browse-tab" class="tab-content">
+            <div class="collections-header">
+                <h2>Collections</h2>
+                <button id="refresh-btn" class="btn-secondary">Refresh</button>
+            </div>
+            <div id="collections-list" class="collections"></div>
+            <div id="documents-panel" class="documents-panel hidden">
+                <div class="documents-header">
+                    <h3 id="collection-title">Documents</h3>
+                    <button id="close-docs-btn" class="btn-icon">✕</button>
+                </div>
+                <div id="documents-list" class="documents"></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
