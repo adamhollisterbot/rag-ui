@@ -1,13 +1,19 @@
-// Cloudflare Pages Function - Proxy to RAG API
-// This keeps the service token secret on the server side
+// Cloudflare Pages Function - Proxy to RAG APIs
+// Routes queries to the embedding API, other requests to Chroma
 
 export async function onRequest(context) {
     const { request, env, params } = context;
     
-    // Build the target URL
     const path = params.path ? params.path.join('/') : '';
     const url = new URL(request.url);
-    const targetUrl = `${env.RAG_API_URL}/api/${path}${url.search}`;
+    
+    // Route /query to the embedding API, everything else to Chroma
+    let targetUrl;
+    if (path === 'query') {
+        targetUrl = `${env.RAG_QUERY_API_URL}/query${url.search}`;
+    } else {
+        targetUrl = `${env.RAG_API_URL}/api/${path}${url.search}`;
+    }
     
     // Clone request with auth headers
     const headers = new Headers(request.headers);

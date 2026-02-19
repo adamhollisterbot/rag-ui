@@ -160,63 +160,26 @@ async function search() {
     const limit = parseInt(limitFilter.value);
     
     try {
-        // Get collections to search
-        let collectionsToSearch = [];
-        const allCollections = await api(`/v2/tenants/${TENANT}/databases/${DATABASE}/collections`);
+        // Use the query API endpoint which handles embeddings server-side
+        const data = await api('/query', {
+            method: 'POST',
+            body: JSON.stringify({
+                query: query,
+                collection: collectionName || null,
+                limit: limit
+            })
+        });
         
-        if (collectionName) {
-            collectionsToSearch = allCollections.filter(c => c.name === collectionName);
-        } else {
-            collectionsToSearch = allCollections;
-        }
-        
-        if (collectionsToSearch.length === 0) {
-            searchResults.innerHTML = '<div class="empty-state">No collections to search</div>';
-            return;
-        }
-        
-        // Search each collection
-        let allResults = [];
-        
-        for (const coll of collectionsToSearch) {
-            try {
-                const data = await api(`/v2/tenants/${TENANT}/databases/${DATABASE}/collections/${coll.id}/query`, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        query_texts: [query],
-                        n_results: limit,
-                        include: ['documents', 'metadatas', 'distances']
-                    })
-                });
-                
-                if (data.ids?.[0]) {
-                    data.ids[0].forEach((id, i) => {
-                        allResults.push({
-                            collection: coll.name,
-                            id: id,
-                            document: data.documents?.[0]?.[i] || '',
-                            metadata: data.metadatas?.[0]?.[i] || {},
-                            distance: data.distances?.[0]?.[i] || null
-                        });
-                    });
-                }
-            } catch (e) {
-                console.error(`Failed to search ${coll.name}:`, e);
-            }
-        }
-        
-        // Sort by distance
-        allResults.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
-        allResults = allResults.slice(0, limit);
+        const results = data.results || [];
         
         // Render results
-        if (allResults.length === 0) {
+        if (results.length === 0) {
             searchResults.innerHTML = '<div class="empty-state">No results found</div>';
             return;
         }
         
         searchResults.innerHTML = '';
-        allResults.forEach(result => {
+        results.forEach(result => {
             const card = document.createElement('div');
             card.className = 'result-card';
             
